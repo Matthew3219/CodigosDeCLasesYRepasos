@@ -1,3 +1,4 @@
+
 public class Arbol_Binario1 {
 
     Node raiz;
@@ -6,41 +7,37 @@ public class Arbol_Binario1 {
         this.raiz = null;
     }
 
-public boolean insertar(int indice, int frutas) {
-    if (buscarPorIndice(indice) != null) {
-        System.out.println("Ya existe un nodo con indice " + indice + ". No se insertó.");
-        return false;
-    }
-
-    Node n = new Node(indice);
-    n.contenido = frutas;
-
-    if (raiz == null) {
-        raiz = n;
-        return true;
-    } else {
-        Node aux = raiz;
-        while (aux != null) {
-            n.padre = aux;
-            // Ordenamos por CONTENIDO, no por índice
-            if (n.contenido >= aux.contenido) {
-                aux = aux.derecha;
-            } else {
-                aux = aux.izquierda;
-            }
+    public boolean insertar(int indice, int frutas) {
+        if (buscarPorIndice(indice) != null) {
+            System.out.println("Ya existe un nodo con indice " + indice + ". No se inserto.");
+            return false;
         }
-        if (n.contenido < n.padre.contenido) {
-            n.padre.izquierda = n;
+
+        Node n = new Node(indice);
+        n.contenido = frutas;
+
+        if (raiz == null) {
+            raiz = n;
+            return true;
         } else {
-            n.padre.derecha = n;
+            Node aux = raiz;
+            while (aux != null) {
+                n.padre = aux;
+                if (n.contenido >= aux.contenido) {
+                    aux = aux.derecha;
+                } else {
+                    aux = aux.izquierda;
+                }
+            }
+            if (n.contenido < n.padre.contenido) {
+                n.padre.izquierda = n;
+            } else {
+                n.padre.derecha = n;
+            }
+            return true;
         }
-        return true;
     }
-}
 
-    // Como el árbol ahora está ordenado por CONTENIDO y no por índice,
-    // buscar un índice ya no puede usar el atajo izquierda/derecha:
-    // hay que recorrer todo el árbol, nodo por nodo (O(n)).
     public Node buscarPorIndice(int indice) {
         return buscarPorIndice(raiz, indice);
     }
@@ -59,7 +56,6 @@ public boolean insertar(int indice, int frutas) {
         return buscarPorIndice(n.derecha, indice);
     }
 
-    // Este SÍ puede usar el atajo, porque el árbol está ordenado por contenido
     public Node buscarPorContenido(int contenido) {
         Node aux = raiz;
         while (aux != null && aux.contenido != contenido) {
@@ -92,7 +88,7 @@ public boolean insertar(int indice, int frutas) {
         return n;
     }
 
-    public boolean eliminar(int indice) {
+    public boolean eliminarMenor(int indice) {
         Node n = buscarPorIndice(indice);
         if (n == null) {
             System.out.println("No existe un nodo con indice " + indice);
@@ -119,6 +115,40 @@ public boolean insertar(int indice, int frutas) {
         return true;
     }
 
+    private Node maximo(Node n) {
+        while (n.derecha != null) {
+            n = n.derecha;
+        }
+        return n;
+    }
+
+    public boolean eliminarMayor(int indice) {
+        Node n = buscarPorIndice(indice);
+        if (n == null) {
+            System.out.println("No existe un nodo con indice " + indice);
+            return false;
+        }
+
+        if (n.izquierda == null) {
+            reemplazar(n, n.derecha);
+        } else if (n.derecha == null) {
+            reemplazar(n, n.izquierda);
+        } else {
+            Node predecesor = maximo(n.izquierda);
+
+            if (predecesor.padre != n) {
+                reemplazar(predecesor, predecesor.izquierda);
+                predecesor.izquierda = n.izquierda;
+                predecesor.izquierda.padre = predecesor;
+            }
+
+            reemplazar(n, predecesor);
+            predecesor.derecha = n.derecha;
+            predecesor.derecha.padre = predecesor;
+        }
+        return true;
+    }
+
     public void recorrer(Node n) {
         if (n != null) {
             recorrer(n.izquierda);
@@ -128,6 +158,7 @@ public boolean insertar(int indice, int frutas) {
     }
 
     private class Node {
+
         public Node padre;
         public Node derecha;
         public Node izquierda;
@@ -146,7 +177,6 @@ public boolean insertar(int indice, int frutas) {
     public static void main(String[] args) {
         Arbol_Binario1 arbolB = new Arbol_Binario1();
 
-        // insertar(indice, contenido) -> el ÁRBOL se ordena por "contenido"
         arbolB.insertar(3, 80);
         arbolB.insertar(2, 45);
         arbolB.insertar(1, 12);
@@ -167,15 +197,15 @@ public boolean insertar(int indice, int frutas) {
         arbolB.recorrer(arbolB.raiz);
 
         System.out.println("\n--- Eliminando el 8 (nodo con dos hijos) ---");
-        arbolB.eliminar(8);
+        arbolB.eliminarMenor(8);
         arbolB.recorrer(arbolB.raiz);
 
         System.out.println("\n--- Eliminando el 0 (nodo hoja) ---");
-        arbolB.eliminar(0);
+        arbolB.eliminarMenor(0);
         arbolB.recorrer(arbolB.raiz);
 
-        System.out.println("\n--- Eliminando el 6 (nodo con un solo hijo) ---");
-        arbolB.eliminar(6);
+        System.out.println("\n--- Eliminando el 6 (nodo con un solo hijo, usando eliminarMayor) ---");
+        arbolB.eliminarMayor(6);
         arbolB.recorrer(arbolB.raiz);
     }
 }
