@@ -1,9 +1,9 @@
 
-public class Arbol_Binario1 {
+public class ArbolBinarios {
 
     Node raiz;
 
-    public Arbol_Binario1() {
+    public ArbolBinarios() {
         this.raiz = null;
     }
 
